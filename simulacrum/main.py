@@ -24,14 +24,24 @@ app.add_middleware(
 class SceneEventLoop:
     buffer_size: int = 500
     radius = 1.5
-    angular_speed = math.pi / 100
+    current_angle = 0
+    angular_speed = math.pi / 500
     rotation_speed = 0.01
 
     def __init__(self) -> None:
-        self.cube_0 = ObjectStatement(id=0, coordinates=Point(y=self.radius))
-        self.cube_1 = ObjectStatement(id=1, coordinates=Point(y=-self.radius))
+        self.cube_0 = ObjectStatement(id=0)
+        self.cube_1 = ObjectStatement(id=1)
+        self.calc_coordinates()
+
+    def calc_coordinates(self) -> None:
+        x = math.cos(self.current_angle) * self.radius
+        y = math.sin(self.current_angle) * self.radius
+        self.current_angle += self.angular_speed
+        self.cube_0.coordinates = Point(x=x, y=y)
+        self.cube_1.coordinates = Point(x=-x, y=-y)
 
     def move_objects(self) -> None:
+        self.calc_coordinates()
         rotation = Vector(x=0.01, y=0.01)
         self.cube_0.rotation = self.cube_0.rotation + rotation
         self.cube_1.rotation = self.cube_1.rotation - rotation
