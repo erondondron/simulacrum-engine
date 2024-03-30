@@ -2,6 +2,7 @@ import asyncio
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from simulacrum.models import SceneStatement, Point, Vector, ObjectStatement, \
@@ -9,9 +10,27 @@ from simulacrum.models import SceneStatement, Point, Vector, ObjectStatement, \
 
 app = FastAPI()
 
+# FIXME(erondondron): Костыль для обхода ошибок CORS
+app.add_middleware(
+    CORSMiddleware,  # type: ignore
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+
+cube_id = 0
+
+
+@app.get("/scene_params")
+def scene_params() -> SceneStatement:
+    cube = ObjectStatement(id=cube_id)
+    return SceneStatement(objects=[cube])
+
+
+@app.websocket("/scene_changes")
+async def scene_changes(websocket: WebSocket):
     await websocket.accept()
     try:
         buffer_size = 500
@@ -28,7 +47,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
             for _ in range(buffer_size):
                 rotation = rotation + Vector(x=0.1, y=0.1)
-                obj_statement = ObjectStatement(rotation=rotation)
+                obj_statement = ObjectStatement(id=cube_id, rotation=rotation)
                 statement = SceneStatement(objects=[obj_statement])
                 message = WebSocketMessage(
                     type=MessageType.response,

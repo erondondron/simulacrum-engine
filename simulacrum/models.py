@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import enum
-import uuid as uid
 from typing import Self
 
 from pydantic import BaseModel as PydanticModel, ConfigDict, Field
@@ -78,15 +77,12 @@ class ObjectStatement(BaseModel):
     """
     Состояние объекта
 
-    :param uuid: Уникальный идентификатор
-    :param time: Время с начала запуска [мс]
+    :param id: Уникальный идентификатор
     :param coordinates: Координаты в пространстве
     :param rotation: Поворот объекта
     """
 
-    uuid: uid.UUID = Field(default_factory=uid.uuid4)
-    time: float = 0
-
+    id: int
     coordinates: Point = Field(default_factory=Point)
     rotation: Point = Field(default_factory=Point)
 
