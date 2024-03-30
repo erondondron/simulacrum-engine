@@ -57,6 +57,13 @@ class Point(BaseModel):
             z=self.z + other.z,
         )
 
+    def __sub__(self, other: Point) -> Self:
+        return Point(
+            x=self.x - other.x,
+            y=self.y - other.y,
+            z=self.z - other.z,
+        )
+
 
 class Vector(Point):
     ...
