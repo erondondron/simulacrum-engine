@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import enum
 import uuid as uid
 from typing import Self
 
@@ -12,6 +13,37 @@ class BaseModel(PydanticModel):
         alias_generator=to_camel,
         populate_by_name=True,
     )
+
+
+class MessageType(enum.StrEnum):
+    """
+    Тип сообщения веб сокета
+
+    :param request: Запрос информации
+    :param response: Предоставление информации
+    """
+    request = "request"
+    response = "response"
+
+
+class WebSocketMessage(BaseModel):
+    """
+    Сообщение веб сокета
+
+    :param type: Тип сообщения веб сокета
+    :param payload: Полезная нагрузка сообщения в формате json
+    """
+    type: MessageType
+    payload: str | None = None
+
+
+class StatementsBuffer(BaseModel):
+    """
+    Информация о буфере состояний сцены
+
+    :param length: Текущая длина буфера
+    """
+    length: int
 
 
 class Point(BaseModel):
@@ -60,5 +92,12 @@ class ObjectStatement(BaseModel):
 
 
 class SceneStatement(BaseModel):
+    """
+    Состояние сцены
+
+    :param camera: Изменение состояния камеры
+    :param objects: Изменение состояний объектов
+    """
+
     camera: CameraStatement | None = None
     objects: list[ObjectStatement] = Field(default_factory=list)
