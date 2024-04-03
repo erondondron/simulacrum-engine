@@ -6,10 +6,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from simulacrum.models import SceneStatement, Point, Vector, ObjectStatement, \
+from simulacrum.api.projects import router as projects
+from simulacrum.models.scene import SceneStatement, Point, Vector, ObjectStatement, \
     WebSocketMessage, MessageType, StatementsBuffer
 
 app = FastAPI()
+
+app.include_router(projects)
 
 # FIXME(erondondron): Костыль для обхода ошибок CORS
 app.add_middleware(
@@ -23,31 +26,31 @@ app.add_middleware(
 
 class SceneEventLoop:
     buffer_size: int = 500
-    radius = 1.5
+    radius = 200
     current_angle = 0
     angular_speed = math.pi / 500
     rotation_speed = 0.01
 
     def __init__(self) -> None:
-        self.cube_0 = ObjectStatement(id=0)
-        self.cube_1 = ObjectStatement(id=1)
+        self.sphere = ObjectStatement(id=0)
+        self.cube = ObjectStatement(id=1)
         self.calc_coordinates()
 
     def calc_coordinates(self) -> None:
         x = math.cos(self.current_angle) * self.radius
         y = math.sin(self.current_angle) * self.radius
         self.current_angle += self.angular_speed
-        self.cube_0.coordinates = Point(x=x, y=y)
-        self.cube_1.coordinates = Point(x=-x, y=-y)
+        self.sphere.coordinates = Point(x=x, y=y)
+        self.cube.coordinates = Point(x=-x, y=-y)
 
     def move_objects(self) -> None:
         self.calc_coordinates()
         rotation = Vector(x=0.01, y=0.01)
-        self.cube_0.rotation = self.cube_0.rotation + rotation
-        self.cube_1.rotation = self.cube_1.rotation - rotation
+        self.sphere.rotation = self.sphere.rotation + rotation
+        self.cube.rotation = self.cube.rotation - rotation
 
     def get_scene(self) -> SceneStatement:
-        return SceneStatement(objects=[self.cube_0, self.cube_1])
+        return SceneStatement(objects=[self.sphere, self.cube])
 
 
 @app.get("/scene_params")
