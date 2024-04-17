@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import enum
 from typing import Self
 from uuid import UUID, uuid4
@@ -46,22 +44,28 @@ class Project(SimulacrumModel):
     name: str = "NewProject"
 
 
-class Vector(SimulacrumModel):
+class StringVector(SimulacrumModel):
+    x: str = ""
+    y: str = ""
+    z: str = ""
+
+
+class NumericVector(SimulacrumModel):
     x: float = 0
     y: float = 0
     z: float = 0
 
     # TODO(erondondron): Вынести в core?
-    def __add__(self, other: Vector) -> Self:
-        return Vector(
+    def __add__(self, other: Self) -> Self:
+        return NumericVector(
             x=self.x + other.x,
             y=self.y + other.y,
             z=self.z + other.z,
         )
 
     # TODO(erondondron): Вынести в core?
-    def __sub__(self, other: Vector) -> Self:
-        return Vector(
+    def __sub__(self, other: Self) -> Self:
+        return NumericVector(
             x=self.x - other.x,
             y=self.y - other.y,
             z=self.z - other.z,
@@ -77,17 +81,18 @@ class SimulacrumObject(SimulacrumModel):
     """
     Объект симулякра
 
-    :param id: Уникальный идентификатор
+    :param uid: Уникальный идентификатор
     :param type: Тип объекта
     :param position: Координаты в пространстве
     :param rotation: Поворот объекта
     """
 
-    id: int
+    uid: UUID = Field(default_factory=uuid4)
     type: ObjectType
 
-    position: Vector = Field(default_factory=Vector)
-    rotation: Vector = Field(default_factory=Vector)
+    position: NumericVector = Field(default_factory=NumericVector)
+    rotation: NumericVector = Field(default_factory=NumericVector)
+    motion_equation: StringVector = Field(default_factory=StringVector)
 
 
 class SimulacrumState(SimulacrumModel):

@@ -1,6 +1,6 @@
 import math
 
-from simulacrum.models import SimulacrumObject, Vector, SimulacrumState
+from simulacrum.models import SimulacrumObject, NumericVector, SimulacrumState
 
 
 class SceneEventLoop:
@@ -19,12 +19,12 @@ class SceneEventLoop:
         x = math.cos(self.current_angle) * self.radius
         y = math.sin(self.current_angle) * self.radius
         self.current_angle += self.angular_speed
-        self.sphere.position = Vector(x=x, y=y)
-        self.cube.position = Vector(x=-x, y=-y)
+        self.sphere.position = NumericVector(x=x, y=y)
+        self.cube.position = NumericVector(x=-x, y=-y)
 
     def move_objects(self) -> None:
         self.calc_coordinates()
-        rotation = Vector(x=0.01, y=0.01)
+        rotation = NumericVector(x=0.01, y=0.01)
         self.sphere.rotation = self.sphere.rotation + rotation
         self.cube.rotation = self.cube.rotation - rotation
 
