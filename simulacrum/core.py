@@ -1,3 +1,5 @@
+from sympy import parse_expr
+
 from simulacrum.models import SimulacrumObject, NumericVector, SimulacrumState
 
 
@@ -11,9 +13,14 @@ class SceneEventLoop:
         self.objects = objects
 
     def calc_coordinates(self) -> None:
-        # x = parse_expr("0.1").subs("t", 10)
-        # y = parse_expr("0.1 * t")
-        pass
+        for obj in self.objects:
+            x = parse_expr(obj.motion_equation.x or "0")
+            y = parse_expr(obj.motion_equation.y or "0")
+            prev_step = self.current_step - self.step_duration
+            dx = x.subs("t", self.current_step) - x.subs("t", prev_step)
+            dy = y.subs("t", self.current_step) - y.subs("t", prev_step)
+            obj.position.x = obj.position.x + dx
+            obj.position.y = obj.position.y + dy
 
     def next_step(self) -> None:
         self.current_step += self.step_duration
