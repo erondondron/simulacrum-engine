@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "simulacrum-engine"
+version = "0.1.0"
+description = ""
+authors = ["Andrey Smirnov <smirnov.andrey.serg@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.110.0"
+uvicorn = {extras = ["standard"], version = "^0.29.0"}
+python-dotenv = "^1.0.1"
+sympy = "^1.12"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.3.4"
