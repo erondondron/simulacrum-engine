@@ -1,32 +1,26 @@
-import math
-
 from simulacrum.models import SimulacrumObject, NumericVector, SimulacrumState
 
 
 class SceneEventLoop:
     buffer_size: int = 500
-    radius = 200
-    current_angle = 0
-    angular_speed = math.pi / 500
-    rotation_speed = 0.01
+    rotation_speed: float = 0.01
+    current_step: float = 0
+    step_duration: float = 1 / 60
 
-    def __init__(self) -> None:
-        self.sphere = SimulacrumObject(id=0)
-        self.cube = SimulacrumObject(id=1)
-        self.calc_coordinates()
+    def __init__(self, objects: list[SimulacrumObject]) -> None:
+        self.objects = objects
 
     def calc_coordinates(self) -> None:
-        x = math.cos(self.current_angle) * self.radius
-        y = math.sin(self.current_angle) * self.radius
-        self.current_angle += self.angular_speed
-        self.sphere.position = NumericVector(x=x, y=y)
-        self.cube.position = NumericVector(x=-x, y=-y)
+        # x = parse_expr("0.1").subs("t", 10)
+        # y = parse_expr("0.1 * t")
+        pass
 
-    def move_objects(self) -> None:
+    def next_step(self) -> None:
+        self.current_step += self.step_duration
         self.calc_coordinates()
         rotation = NumericVector(x=0.01, y=0.01)
-        self.sphere.rotation = self.sphere.rotation + rotation
-        self.cube.rotation = self.cube.rotation - rotation
+        for obj in self.objects:
+            obj.rotation = obj.rotation + rotation
 
     def get_scene(self) -> SimulacrumState:
-        return SimulacrumState(objects=[self.sphere, self.cube])
+        return SimulacrumState(objects=self.objects)

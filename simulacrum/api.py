@@ -1,10 +1,14 @@
+import asyncio
 from pathlib import Path
 from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from simulacrum.models import Project, SimulacrumState, ProjectState
+from simulacrum.core import SceneEventLoop
+from simulacrum.models import Project, SimulacrumState, ProjectState, \
+    WebSocketMessage, WSMessageType, GUIBuffer
 from simulacrum.settings import STORAGE
 
 PROJECTS_STORAGE = STORAGE.joinpath("projects")
@@ -84,3 +88,31 @@ async def update_project_objects(
     project = load_project(project_uuid)
     project.init_state = project_state
     dump_project(project)
+
+
+@router.websocket("/projects/{project_uuid}/run")
+async def scene_changes(project_uuid: UUID, websocket: WebSocket) -> None:
+    project = load_project(project_uuid)
+    await websocket.accept()
+    try:
+        scene = SceneEventLoop(project.init_state.objects)
+        while True:
+            buffer_request = WebSocketMessage(type=WSMessageType.request)
+            await websocket.send_text(buffer_request.model_dump_json())
+            raw_response = await websocket.receive_text()
+            response = WebSocketMessage.model_validate_json(raw_response)
+            buffer = GUIBuffer.model_validate_json(response.payload)
+            if buffer.length >= scene.buffer_size:
+                await asyncio.sleep(0.05)
+                continue
+
+            for _ in range(scene.buffer_size):
+                scene.next_step()
+                message = WebSocketMessage(
+                    type=WSMessageType.response,
+                    payload=scene.get_scene().model_dump_json()
+                )
+                await websocket.send_text(message.model_dump_json())
+
+    except WebSocketDisconnect:
+        pass
